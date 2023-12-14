@@ -7,6 +7,7 @@ module OpenAI.Types where
 
 import Control.Monad.Trans.Reader
 import Data.Aeson
+import Data.Aeson.Types as AT
 import Data.String
 import Data.Text
 import Data.Time.Clock
@@ -61,13 +62,60 @@ mkAudioRequest input =
 
 data ChatMessage = ChatMessage
   { role :: !Text
-  , content :: !Text
+  , content :: !Message
   }
   deriving (Generic, Show)
 
 instance FromJSON ChatMessage
 
 instance ToJSON ChatMessage
+
+data Message
+  = TextMessage !Text
+  | ImageMessage ![MessageContent]
+  deriving (Generic, Show)
+
+instance FromJSON Message where
+  parseJSON (String v) = return $ TextMessage v
+  parseJSON v@(Array _) = ImageMessage <$> parseJSON v
+  parseJSON invalid = typeMismatch "Object" invalid
+
+instance ToJSON Message where
+  toJSON (TextMessage t) = String t
+  toJSON (ImageMessage t) = toJSON t
+
+data MessageContent
+  = TextContent
+      { contentType :: !Text
+      , text :: !Text
+      }
+  | ImageContent
+      { contentType :: !Text
+      , imageUrl :: !URL
+      }
+  deriving (Generic, Show)
+
+instance FromJSON MessageContent where
+  parseJSON = withObject "MessageContent" $ \v -> do
+    ct <- v .: "type"
+    mtxt <- v .:? "text"
+
+    case mtxt of
+      Just txt -> return $ TextContent ct txt
+      Nothing -> ImageContent ct <$> v .: "image_url"
+
+instance ToJSON MessageContent where
+  toJSON (TextContent t txt) = AT.object ["type" .= t, "text" .= txt]
+  toJSON (ImageContent t url) = AT.object ["type" .= t, "image_url" .= toJSON url]
+
+newtype URL = URL {url :: Text} deriving (Generic, Show)
+
+instance IsString URL where
+  fromString = URL . pack
+
+instance FromJSON URL
+
+instance ToJSON URL
 
 data OpenAIResponse = ChatResponse
   { id :: !Text

@@ -5,6 +5,7 @@ module Main where
 import Configuration.Dotenv
 import Control.Monad.Trans.Reader
 import Control.Monad.Trans.Resource (runResourceT)
+import Data.Aeson
 import Data.Conduit (runConduit, (.|))
 import Data.Conduit.Binary (sinkHandle)
 import Data.String
