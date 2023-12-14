@@ -73,7 +73,10 @@ library
                       aeson,
                       http-conduit,
                       time,
-                      bytestring
+                      bytestring,
+                      conduit,
+                      resourcet,
+                      transformers
 
     -- Directories containing source files.
     hs-source-dirs:   src
@@ -106,7 +109,8 @@ executable openai
         conduit-extra,
         resourcet,
         bytestring,
-        filepath
+        filepath,
+        transformers
 
     -- Directories containing source files.
     hs-source-dirs:   app

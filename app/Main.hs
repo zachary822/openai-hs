@@ -1,18 +1,15 @@
-{-# LANGUAGE OverloadedRecordDot #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Main where
 
 import Configuration.Dotenv
+import Control.Monad.Trans.Reader
 import Control.Monad.Trans.Resource (runResourceT)
 import Data.Conduit (runConduit, (.|))
 import Data.Conduit.Binary (sinkHandle)
 import Data.String
-import Data.Text qualified as T
 import Data.Text.IO qualified as TIO
 import Network.HTTP.Client.Conduit
-import Network.HTTP.Conduit
-import Network.HTTP.Simple
 import OpenAI
 import OpenAI.Types
 import System.Environment
@@ -28,12 +25,6 @@ main = do
 
   d <- mkAudioRequest <$> TIO.getContents
 
-  hPutStrLn stderr ("model: " <> T.unpack d.model <> "text length: " <> show (T.length d.input))
-
-  req <-
-    setRequestMethod "POST" . setApiKey apikey . setRequestBodyJSON d
-      <$> parseRequest "https://api.openai.com/v1/audio/speech"
-
-  runResourceT $ do
-    resp <- http req manager
+  runResourceT . flip runReaderT apikey $ do
+    resp <- audioRequest manager d
     runConduit $ responseBody resp .| sinkHandle stdout

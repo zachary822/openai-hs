@@ -5,11 +5,14 @@
 
 module OpenAI.Types where
 
+import Control.Monad.Trans.Reader
 import Data.Aeson
 import Data.String
 import Data.Text
 import Data.Time.Clock
 import GHC.Generics
+
+type OpenAIT = ReaderT ApiKey
 
 opts :: Options
 opts =
