@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedRecordDot #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Main where
@@ -7,6 +8,8 @@ import Control.Monad.Trans.Resource (runResourceT)
 import Data.Conduit (runConduit, (.|))
 import Data.Conduit.Binary (sinkHandle)
 import Data.String
+import Data.Text qualified as T
+import Data.Text.IO qualified as TIO
 import Network.HTTP.Client.Conduit
 import Network.HTTP.Conduit
 import Network.HTTP.Simple
@@ -23,7 +26,9 @@ main = do
 
   manager <- newManagerSettings defaultManagerSettings
 
-  let d = mkAudioRequest "this is a test!"
+  d <- mkAudioRequest <$> TIO.getContents
+
+  hPutStrLn stderr ("model: " <> T.unpack d.model <> "text length: " <> show (T.length d.input))
 
   req <-
     setRequestMethod "POST" . setApiKey apikey . setRequestBodyJSON d
