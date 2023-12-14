@@ -22,9 +22,7 @@ fileTypes =
   ]
 
 getFileExt :: Response a -> Maybe String
-getFileExt resp = lookup (head hs) fileTypes
- where
-  hs = getResponseHeader "content-type" resp
+getFileExt = flip lookup fileTypes . head . getResponseHeader "content-type"
 
 audioRequest ::
   (MonadThrow m, MonadResource m) =>
