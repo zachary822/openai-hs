@@ -34,11 +34,15 @@ data ChatRequest = ChatRequest
   { model :: !Text
   , messages :: ![ChatMessage]
   , temperature :: !(Maybe Double)
+  , stream :: !Bool
   }
   deriving (Generic, Show)
 
 instance ToJSON ChatRequest where
   toJSON = genericToJSON opts
+
+mkChatRequest :: Text -> [ChatMessage] -> ChatRequest
+mkChatRequest model messages = ChatRequest{temperature = Nothing, stream = False, ..}
 
 data AudioRequest = AudioRequest
   { model :: !Text

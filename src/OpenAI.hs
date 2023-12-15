@@ -36,3 +36,16 @@ audioRequest manager d = do
       <$> parseRequest "https://api.openai.com/v1/audio/speech"
 
   http req manager
+
+chatRequest ::
+  (MonadThrow m, MonadResource m) =>
+  Manager ->
+  ChatRequest ->
+  OpenAIT m (Response (ConduitT i ByteString (OpenAIT m) ()))
+chatRequest manager d = do
+  apikey <- ask
+  req <-
+    setRequestMethod "POST" . setRequestApiKey apikey . setRequestBodyJSON d
+      <$> parseRequest "https://api.openai.com/v1/chat/completions"
+
+  http req manager
