@@ -9,7 +9,6 @@ import Data.Conduit
 import Data.Conduit.Combinators qualified as C
 import Data.String
 import Data.Text.IO qualified as TIO
-import Network.HTTP.Client.Conduit
 import OpenAI
 import OpenAI.Types
 import System.Environment
@@ -20,10 +19,7 @@ main = do
 
   apikey :: ApiKey <- fromString <$> getEnv "API_KEY"
 
-  manager <- newManagerSettings defaultManagerSettings
-
   d <- mkAudioRequest <$> TIO.getContents
 
   runResourceT . flip runReaderT apikey $ do
-    resp <- audioRequest manager d
-    runConduit $ responseBody resp .| C.stdout
+    runConduit $ audioRequest d .| C.stdout

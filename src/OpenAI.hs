@@ -2,6 +2,7 @@
 
 module OpenAI where
 
+import Control.Monad.Trans.Class
 import Control.Monad.Trans.Reader
 import Control.Monad.Trans.Resource
 import Data.ByteString (ByteString)
@@ -14,38 +15,22 @@ import OpenAI.Types
 setRequestApiKey :: ApiKey -> Request -> Request
 setRequestApiKey = setRequestBearerAuth . encodeUtf8 . getApiKey
 
-fileTypes :: [(ByteString, String)]
-fileTypes =
-  [ ("audio/flac", "flac")
-  , ("audio/aac", "aac")
-  , ("audio/mpeg", "mp3")
-  ]
-
-getFileExt :: Response a -> Maybe String
-getFileExt = flip lookup fileTypes . head . getResponseHeader "content-type"
-
 audioRequest ::
-  (MonadThrow m, MonadResource m) =>
-  Manager ->
-  AudioRequest ->
-  OpenAIT m (Response (ConduitT i ByteString (OpenAIT m) ()))
-audioRequest manager d = do
-  apikey <- ask
+  (MonadResource m) => AudioRequest -> ConduitT i ByteString (OpenAIT m) ()
+audioRequest payload = do
+  apikey <- lift ask
   let req =
-        setRequestMethod "POST" . setRequestApiKey apikey . setRequestBodyJSON d $
+        setRequestMethod "POST" . setRequestApiKey apikey . setRequestBodyJSON payload $
           "https://api.openai.com/v1/audio/speech"
-
-  http req manager
+  httpSource req getResponseBody
 
 chatRequest ::
   (MonadThrow m, MonadResource m) =>
-  Manager ->
   ChatRequest ->
-  OpenAIT m (Response (ConduitT i ByteString (OpenAIT m) ()))
-chatRequest manager d = do
-  apikey <- ask
+  ConduitT i ByteString (OpenAIT m) ()
+chatRequest payload = do
+  apikey <- lift ask
   let req =
-        setRequestMethod "POST" . setRequestApiKey apikey . setRequestBodyJSON d $
+        setRequestMethod "POST" . setRequestApiKey apikey . setRequestBodyJSON payload $
           "https://api.openai.com/v1/chat/completions"
-
-  http req manager
+  httpSource req getResponseBody
