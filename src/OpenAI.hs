@@ -31,9 +31,9 @@ audioRequest ::
   OpenAIT m (Response (ConduitT i ByteString (OpenAIT m) ()))
 audioRequest manager d = do
   apikey <- ask
-  req <-
-    setRequestMethod "POST" . setRequestApiKey apikey . setRequestBodyJSON d
-      <$> parseRequest "https://api.openai.com/v1/audio/speech"
+  let req =
+        setRequestMethod "POST" . setRequestApiKey apikey . setRequestBodyJSON d $
+          "https://api.openai.com/v1/audio/speech"
 
   http req manager
 
@@ -44,8 +44,8 @@ chatRequest ::
   OpenAIT m (Response (ConduitT i ByteString (OpenAIT m) ()))
 chatRequest manager d = do
   apikey <- ask
-  req <-
-    setRequestMethod "POST" . setRequestApiKey apikey . setRequestBodyJSON d
-      <$> parseRequest "https://api.openai.com/v1/chat/completions"
+  let req =
+        setRequestMethod "POST" . setRequestApiKey apikey . setRequestBodyJSON d $
+          "https://api.openai.com/v1/chat/completions"
 
   http req manager

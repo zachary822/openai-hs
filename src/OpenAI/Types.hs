@@ -1,5 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
@@ -22,13 +24,10 @@ opts =
     , omitNothingFields = True
     }
 
-newtype ApiKey = ApiKey {getApiKey :: Text}
+newtype ApiKey = ApiKey {getApiKey :: Text} deriving newtype (IsString)
 
 instance Show ApiKey where
   show _ = "<redacted>"
-
-instance IsString ApiKey where
-  fromString = ApiKey . fromString
 
 data ChatRequest = ChatRequest
   { model :: !Text

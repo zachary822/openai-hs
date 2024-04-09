@@ -6,14 +6,13 @@ import Configuration.Dotenv
 import Control.Monad.Trans.Reader
 import Control.Monad.Trans.Resource (runResourceT)
 import Data.Conduit
-import Data.Conduit.Binary (sinkHandle)
+import Data.Conduit.Combinators qualified as C
 import Data.String
 import Data.Text.IO qualified as TIO
 import Network.HTTP.Client.Conduit
 import OpenAI
 import OpenAI.Types
 import System.Environment
-import System.IO
 
 main :: IO ()
 main = do
@@ -27,4 +26,4 @@ main = do
 
   runResourceT . flip runReaderT apikey $ do
     resp <- audioRequest manager d
-    runConduit $ responseBody resp .| sinkHandle stdout
+    runConduit $ responseBody resp .| C.stdout
